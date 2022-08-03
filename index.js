@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors')
+const mongoose = require('mongoose')
 //const morgan = require('morgan')
 const app = express()
 
@@ -19,6 +20,7 @@ app.use(express.json())
 app.use(cors())
 app.use(express.static('build'))
 
+/*
 let persons = [
     { 
       "id": 1,
@@ -41,13 +43,40 @@ let persons = [
       "number": "39-23-6423122"
     }
 ]
+*/
+
+//---------------------------------------//
+//define the mongoDB
+
+const url = `mongodb+srv://FullstackDev:${password}@cluster0.62zyadx.mongodb.net/?retryWrites=true&w=majority`
+
+mongoose.connect(url).then(result => console.log('connected'))
+
+const personSchema = new mongoose.Schema({
+  name: String,
+  number: String,
+})
+
+//proper form of schema
+personSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
+})
+
+const Person = mongoose.model('Person', personSchema)
+
+//---------------------------------------//
 
 app.get('/', (req, res) => {
   res.json(persons)
 })
 
 app.get('/api/persons', (req, res) => {
-    res.json(persons)
+    //res.json(persons)
+    Person.find({}).then(phonebook => res.json(phonebook))
 })
 
 app.get('/info', (req, res) => {
